@@ -1,0 +1,65 @@
+import pygame
+import math
+
+# Pygame başlangıç ayarları
+WIDTH, HEIGHT = 600, 400
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
+
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
+
+# Yay ve kütle parametreleri
+yay_uzunluk = 100
+kütle = 1  # kg
+yay_sabiti = 0.5  # N/m
+damping = 0.02  # Sönümleme katsayısı
+
+y0 = HEIGHT // 3  # Denge konumu
+y = y0 + 50  # Başlangıç konumu
+v = 0  # Başlangıç hızı
+g = 9.81  # Yerçekimi ivmesi
+
+def hesapla_enerjiler(y, v):
+    pot_enerji = 0.5 * yay_sabiti * (y - y0) ** 2
+    kin_enerji = 0.5 * kütle * v ** 2
+    return pot_enerji, kin_enerji
+
+running = True
+while running:
+    screen.fill(WHITE)
+    
+    # Fizik hesaplamaları
+    yay_kuvveti = -yay_sabiti * (y - y0)
+    toplam_kuvvet = yay_kuvveti - damping * v - kütle * g
+    a = toplam_kuvvet / kütle
+    v += a * 0.1  # Zaman adımı
+    y += v * 0.1
+    
+    # Enerjileri hesapla
+    pot_enerji, kin_enerji = hesapla_enerjiler(y, v)
+    
+    # Yay çizimi
+    pygame.draw.line(screen, BLACK, (WIDTH//2, 50), (WIDTH//2, int(y)), 5)
+    
+    # Kütle çizimi
+    pygame.draw.circle(screen, RED, (WIDTH//2, int(y)), 20)
+    
+    # Enerji grafikleri
+    pygame.draw.rect(screen, BLUE, (50, HEIGHT - 50 - int(pot_enerji*5), 40, int(pot_enerji*5)))
+    pygame.draw.rect(screen, GREEN, (120, HEIGHT - 50 - int(kin_enerji*5), 40, int(kin_enerji*5)))
+    
+    pygame.display.flip()
+    
+    # Olayları kontrol et
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    
+    clock.tick(60)
+
+pygame.quit()
